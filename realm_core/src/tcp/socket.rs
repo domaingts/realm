@@ -10,12 +10,21 @@ use crate::time::timeoutfut;
 use crate::endpoint::{RemoteAddr, BindOpts, ConnectOpts};
 
 pub fn bind(laddr: &SocketAddr, bind_opts: BindOpts) -> Result<TcpListener> {
-    let BindOpts { ipv6_only } = bind_opts;
+    let BindOpts {
+        ipv6_only,
+        bind_interface,
+    } = bind_opts;
     let socket = new_tcp_socket(laddr)?;
 
     // ipv6_only
     if let SocketAddr::V6(_) = laddr {
         socket.set_only_v6(ipv6_only)?;
+    }
+
+    // bind interface
+    #[cfg(target_os = "linux")]
+    if let Some(iface) = bind_interface {
+        realm_syscall::bind_to_device(&socket, &iface)?;
     }
 
     // ignore error
@@ -46,7 +55,7 @@ pub async fn connect(raddr: &RemoteAddr, conn_opts: &ConnectOpts) -> Result<TcpS
         let socket = new_tcp_socket(&addr)?;
 
         // ignore error
-        let _ = socket.set_nodelay(true);
+        let _ = socket.set_tcp_nodelay(true);
         let _ = socket.set_reuse_address(true);
 
         if let Some(addr) = *bind_address {

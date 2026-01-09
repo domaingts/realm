@@ -1,13 +1,11 @@
 [package]
 name = "realm"
-version = "0.1.0"
+version = "26.1.9"
 authors = ["zhboner <zhboner@gmail.com>"]
 edition = "2021"
 
-
 [workspace]
 members = ["realm_io", "realm_lb", "realm_core", "realm_hook", "realm_syscall"]
-
 
 [lib]
 name = "realm"
@@ -16,7 +14,6 @@ path = "src/lib.rs"
 [[bin]]
 name = "realm"
 path = "src/bin.rs"
-
 
 [dependencies]
 # realm
@@ -28,15 +25,15 @@ futures = "0.3"
 walkdir = "2"
 
 # runtime
-tokio = { version = "1", features = ["rt"] }
+tokio = { version = "1", default-features = false, features = ["rt"] }
 
 # logger
 log = "0.4"
-fern = "0.6"
+fern = "0.7"
 chrono = "0.4"
 
 # command
-clap = "4"
+clap = { version = "4", features = ["string"] }
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -48,18 +45,16 @@ mimalloc = { version = "0.1", optional = true, default-features = false }
 jemallocator = { version = "0.5", optional = true }
 mmap-allocator = { version = "0.3", optional = true }
 
-
 [dev-dependencies]
 env_logger = "0.11"
 tokio = { version = "1", features = ["macros"] }
-
 
 [features]
 default = [
     "proxy",
     "balance",
     "multi-thread",
-    "transport",
+    # "transport",
     "batched-udp",
     "brutal-shutdown",
 ]
@@ -73,7 +68,6 @@ multi-thread = ["tokio/rt-multi-thread", "realm_core/multi-thread"]
 jemalloc = ["jemallocator"]
 mi-malloc = ["mimalloc"]
 page-alloc = ["mmap-allocator"]
-
 
 [profile.release]
 opt-level = 3

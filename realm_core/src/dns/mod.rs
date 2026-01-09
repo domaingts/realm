@@ -1,3 +1,5 @@
+#![allow(static_mut_refs)]
+
 //! Global dns resolver.
 
 use std::io::{Result, Error, ErrorKind};
@@ -30,7 +32,7 @@ pub struct DnsConf {
 impl Default for DnsConf {
     fn default() -> Self {
         #[cfg(any(all(unix, not(target_os = "android")), windows))]
-        let (conf, opts) = read_system_conf().unwrap();
+        let (conf, opts) = read_system_conf().unwrap_or_default();
 
         #[cfg(not(any(all(unix, not(target_os = "android")), windows)))]
         let (conf, opts) = Default::default();
@@ -105,7 +107,7 @@ pub enum LookupRemoteAddr<'a> {
 
 impl LookupRemoteAddr<'_> {
     /// Get view of resolved result.
-    pub fn iter(&self) -> LookupRemoteAddrIter {
+    pub fn iter(&self) -> LookupRemoteAddrIter<'_> {
         use LookupRemoteAddr::*;
         match self {
             NoLookup(addr) => LookupRemoteAddrIter::NoLookup(std::iter::once(addr)),
